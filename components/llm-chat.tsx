@@ -6,7 +6,7 @@ import { MessageCircle, Plus, Send, Sparkles } from 'lucide-react';
 type Message = { role: 'user' | 'assistant'; content: string };
 const opening: Message = { role: 'assistant', content: '你想创建什么角色？' };
 
-export function LLMChat() {
+export function LLMChat({ onUseDraft }: { onUseDraft?: (draft: string) => void } = {}) {
   const [messages, setMessages] = useState<Message[]>([opening]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -64,6 +64,7 @@ export function LLMChat() {
       {messages.map((message, index) => <div key={index} className={`llm-chat-message ${message.role}`}><span className="llm-chat-avatar" aria-hidden="true">{message.role === 'assistant' ? <Sparkles /> : <MessageCircle />}</span><div className="llm-chat-bubble">{message.content}</div></div>)}
       {busy && <div className="llm-chat-message assistant"><span className="llm-chat-avatar"><Sparkles aria-hidden="true" /></span><div className="llm-chat-bubble llm-chat-thinking" role="status">正在思考…</div></div>}
       {error && <div className="llm-chat-error" role="alert"><span>{error}</span><button type="button" onClick={retry}>重试</button></div>}
+      {onUseDraft && messages.length > 1 && messages.at(-1)?.role === 'assistant' && !busy && <button type="button" className="creator-use-draft" onClick={() => onUseDraft(messages.at(-1)!.content)}>将这段设定带入角色资料</button>}
       <div ref={bottom} />
     </div>
     <form className="llm-chat-composer" onSubmit={send}><textarea aria-label="描述想创建的角色" value={draft} onChange={event => setDraft(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} placeholder="描述你想创建的角色…" rows={1} maxLength={2000} /><button type="submit" disabled={!draft.trim() || busy} aria-label="发送消息"><Send aria-hidden="true" /></button></form>

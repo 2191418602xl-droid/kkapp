@@ -7,6 +7,8 @@ import { ArrowLeft, Bot, Check, ChevronRight, ImageIcon, Plus, Search, Upload, W
 import { CharacterChat, type ChatMessage } from '@/components/character-chat';
 import { CharacterCardImport } from '@/components/character-card-import';
 import { MultimodalStudio } from '@/components/multimodal-studio';
+import { LLMChat } from '@/components/llm-chat';
+import { DiscoveryPlay } from '@/components/discovery-play';
 
 export type AgentProfile = { id: number | string; name: string; avatar: string; tagline: string; description?: string; personality?: string; background?: string; greeting: string; tags?: string[]; voice: string };
 const recommended: AgentProfile[] = [
@@ -16,7 +18,7 @@ const recommended: AgentProfile[] = [
   { id: 5, name: '傅砚辞', avatar: '/avatars/avatar-11.webp', tagline: '寡言可靠，用行动回应每一次靠近', greeting: '（指尖在表带上停了一瞬）时间还早。你想说的话，我都听着。', voice: '沉稳' },
 ];
 const avatars = ['/avatars/avatar-01.webp', '/avatars/avatar-02.webp', '/avatars/avatar-03.jpg', '/avatars/avatar-06.webp', '/avatars/avatar-09.webp', '/avatars/avatar-15.jpg'];
-const initialForm = { name: '', avatar: avatars[0], tagline: '', personality: '', background: '', greeting: '', voice: '温柔' };
+const initialForm = { name: '', avatar: '', tagline: '', personality: '', background: '', greeting: '', voice: '温柔' };
 
 export function useAgentLibrary() {
   const [agents, setAgents] = useState<AgentProfile[]>([]);
@@ -66,6 +68,8 @@ export function AgentStudio({ library, active, onSelect, onBack, mineRequest, ba
   const [tab, setTab] = useState<'推荐' | '我的'>('推荐');
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
+  const [assisting, setAssisting] = useState(false);
+  const [worldMode, setWorldMode] = useState<'create' | 'drafts' | null>(null);
   const [importing, setImporting] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [imageStyle, setImageStyle] = useState<'清新动漫' | '厚涂漫画' | '写实人像'>('清新动漫');
@@ -74,10 +78,10 @@ export function AgentStudio({ library, active, onSelect, onBack, mineRequest, ba
   const [histories, setHistories] = useState<Record<string, ChatMessage[]>>({});
   const [seenMineRequest, setSeenMineRequest] = useState(mineRequest);
   if (seenMineRequest !== mineRequest) {
-    setSeenMineRequest(mineRequest); setTab('我的'); setQuery(''); setCreating(false); setImporting(false);
+    setSeenMineRequest(mineRequest); setTab('我的'); setQuery(''); setCreating(false); setImporting(false); setAssisting(false); setWorldMode(null);
   }
   async function create(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setError(''); setStatus('');
+    event.preventDefault(); if (!form.avatar) { setError('请先生成图片或选择现有形象。'); return; } setBusy(true); setError(''); setStatus('');
     try {
       const response = await fetch('/api/agents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const data = await response.json() as { agent?: AgentProfile; error?: string };
@@ -87,10 +91,12 @@ export function AgentStudio({ library, active, onSelect, onBack, mineRequest, ba
     } catch (e) { setError(e instanceof Error ? e.message : '创建失败，请重试。'); }
     finally { setBusy(false); }
   }
+  if (worldMode) return <DiscoveryPlay name="创作中心" worlds={[]} onWorld={() => {}} onBack={() => setWorldMode(null)} initialCreatorMode={worldMode} />;
   if (active) {
     const key = String(active.id);
     return <CharacterChat contact={{ id: active.id, name: active.name, image: active.avatar, preview: active.greeting, voice: active.voice }} messages={histories[key] ?? [{ role: 'assistant', content: active.greeting }]} onMessages={messages => setHistories(current => ({ ...current, [key]: messages }))} onBack={onBack} backLabel={backLabel} />;
   }
+  if (assisting) return <div className="screen creator-ai-screen"><div className="creator-ai-toolbar"><button onClick={() => setAssisting(false)}><ArrowLeft />创作者中心</button><button onClick={() => { setAssisting(false); setCreating(true); }}>填写角色资料<ChevronRight /></button></div><LLMChat onUseDraft={draft => { setForm(value => ({ ...value, background: draft.slice(0, 1000) })); setAssisting(false); setCreating(true); }} /></div>;
   if (importing) return <CharacterCardImport onBack={() => setImporting(false)} onCreated={agent => {
     library.add(agent); setImporting(false); setCreating(false); setTab('我的'); setStatus('角色卡已导入'); onSelect(agent);
   }} />;
@@ -99,7 +105,7 @@ export function AgentStudio({ library, active, onSelect, onBack, mineRequest, ba
     <form className="agent-create-form" onSubmit={create}>
       <section className="agent-visual-section">
         <div className="agent-step"><i>1</i><span><b>角色形象</b><small>先选一张形象，也可以描述并生成</small></span></div>
-        <div className="agent-visual-preview"><img src={form.avatar} alt="当前角色形象" /><span><ImageIcon />当前形象</span></div>
+        {form.avatar && <div className="agent-visual-preview"><img src={form.avatar} alt="已选择的角色形象" /><span><ImageIcon />已选择形象</span></div>}
         <div className="agent-style-heading">绘画风格</div>
         <div className="agent-style-options">{(['清新动漫', '厚涂漫画', '写实人像'] as const).map(style => <button type="button" key={style} aria-pressed={imageStyle === style} onClick={() => setImageStyle(style)}>{style}</button>)}</div>
         <label>形象描述<textarea maxLength={300} rows={3} value={imageDescription} onChange={e => setImageDescription(e.target.value)} placeholder="描述发型、服装、神情和场景…" /></label>
@@ -116,10 +122,10 @@ export function AgentStudio({ library, active, onSelect, onBack, mineRequest, ba
   </div>;
   const visible = (tab === '推荐' ? recommended : agents).filter(agent => `${agent.name}${agent.tagline}`.toLowerCase().includes(query.trim().toLowerCase()));
   return <div className="screen scroll-screen agent-studio-screen agent-create-home">
-    <header className="agent-studio-title"><span><small>KIRAKIRA · 创作空间</small><h2>创作</h2></span></header>
+    <header className="agent-studio-title"><span><small>KIRAKIRA · CREATOR STUDIO</small><h2>创作者中心</h2></span><button type="button" className="creator-import-top" onClick={() => setImporting(true)} title="导入 PNG、JSON、TXT 角色卡及世界书"><Upload size={18} />一键导入</button></header>
     <section className="agent-create-hero"><img src="/avatars/avatar-17.webp" alt="" /><div className="agent-create-hero-content"><small>把想象变成相遇</small><h3>创建一个<br />只属于你的角色</h3><p>定下 TA 的形象、性格和第一句话。</p><button type="button" onClick={() => setCreating(true)}><Plus />创建角色<ChevronRight /></button></div></section>
-    <button className="agent-import-card" type="button" onClick={() => setImporting(true)}><span><Upload /></span><span><b>导入角色卡</b><small>已有 PNG、JSON 或 TXT 设定？直接导入</small></span><ChevronRight /></button>
-    <div className="agent-studio-tabs">{(['推荐', '我的'] as const).map(item => <button key={item} className={tab === item ? 'selected' : ''} onClick={() => setTab(item)}>{item === '推荐' ? '灵感角色' : '我的角色'}{item === '我的' && <i>{library.status === 'ready' ? agents.length : '—'}</i>}</button>)}</div>
+    <div className="creator-action-grid"><button type="button" onClick={() => setAssisting(true)}><WandSparkles /><b>AI 辅助创作</b><small>一起打磨人设、关系与故事</small></button><button type="button" onClick={() => setWorldMode('create')}><Plus /><b>创建世界／剧情</b><small>编写世界背景、关系与开场</small></button><button type="button" onClick={() => setWorldMode('drafts')}><Upload /><b>草稿箱</b><small>找回之前保存的世界，继续编辑</small></button><button type="button" onClick={() => { setTab('我的'); setQuery(''); requestAnimationFrame(() => document.getElementById('creator-works')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }}><Bot /><b>我的作品</b><small>查看已创建角色，进入试聊</small></button></div>
+    <div id="creator-works" className="agent-studio-tabs">{(['推荐', '我的'] as const).map(item => <button key={item} className={tab === item ? 'selected' : ''} onClick={() => setTab(item)}>{item === '推荐' ? '灵感角色' : '我的角色'}{item === '我的' && <i>{library.status === 'ready' ? agents.length : '—'}</i>}</button>)}</div>
     <label className="agent-search"><Search /><input value={query} onChange={e => setQuery(e.target.value)} placeholder={tab === '我的' ? '搜索我的角色' : '搜索灵感角色'} />{query && <button onClick={() => setQuery('')} aria-label="清空"><X /></button>}</label>
     {status && <output className="agent-studio-status"><Check />{status}</output>}
     {tab === '我的' && library.status === 'error' && <p className="agent-studio-error" role="alert">{library.error}<button onClick={() => void library.refresh()}>重试</button></p>}

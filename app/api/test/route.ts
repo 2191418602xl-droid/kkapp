@@ -1,3 +1,4 @@
+import { deepseekKey } from '@/lib/deepseek';
 import { chatRuntime } from '@/lib/chat-server';
 import { FRONT_EVENTS, acceptance, type E2EEvent } from '@/lib/e2e-shared';
 import { record, requireTest, sessionId, testEnabled } from '@/lib/e2e-server';
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
  const user=signedInUser(request);
  const result=await chatRuntime().DB.prepare('SELECT * FROM e2e_events WHERE session_id = ? AND (user_id = ? OR user_id IS NULL) ORDER BY created_at, rowid LIMIT 2000').bind(session,user?.id??'').all<E2EEvent>();
  const events=result.results;
- return privateJson({enabled:true,user_id:user?.id??null,session_id:session,events,acceptance:acceptance(events),capabilities:{aiConfigured:Boolean(chatRuntime().DEEPSEEK_API_KEY?.trim()),voice:'mock',payment:'mock',auth:'official-local-simulator',memory:'recent saved conversation + keyword lorebook',understanding:'rule-based',reviewer:'rule-based'}});
+ return privateJson({enabled:true,user_id:user?.id??null,session_id:session,events,acceptance:acceptance(events),capabilities:{aiConfigured:Boolean(deepseekKey()),voice:'mock',payment:'mock',auth:'official-local-simulator',memory:'recent saved conversation + keyword lorebook',understanding:'rule-based',reviewer:'rule-based'}});
 }
 export async function POST(request: Request) {
  try {

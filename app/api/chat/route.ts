@@ -1,12 +1,13 @@
-import { record, sessionId, testEnabled } from '@/lib/e2e-server';
+import { record } from '@/lib/e2e-server';
 import { chatRuntime } from '@/lib/chat-server';
+import { deepseekKey } from '@/lib/deepseek';
 import { runRoleModel,resolveRoleContext } from '@/lib/role-model';
 import { signedInUser, resourceOwner, privateJson, flowInput, FlowError } from '@/lib/account-identity';
 import { ensureAccount, reserveChatReply, commitChatReply, refundChatReply } from '@/lib/account-commerce';
 import { AccountError } from '@/lib/account-shared';
 import { validCharacterId, worldName, getConversation, openConversation, conversationHistory, latestUnfinishedTurn, beginTurn, failTurn, completedTurnStatements } from '@/lib/conversations';
 
-const configured = () => Boolean(chatRuntime().DEEPSEEK_API_KEY?.trim());
+const configured = () => Boolean(deepseekKey());
 function parseCharacter(value: unknown) { return typeof value === 'string' && /^[1-6]$/.test(value) ? Number(value) : value; }
 async function checkCharacter(request: Request, id: string | number) {
   if (typeof id === 'string' && !await chatRuntime().DB.prepare('SELECT id FROM agent_profiles WHERE id = ? AND visitor = ?').bind(id, resourceOwner(request)).first()) throw new FlowError('找不到这个角色。', 404);

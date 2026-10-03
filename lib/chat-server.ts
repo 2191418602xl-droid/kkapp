@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:workers';
 
 export function chatRuntime() {
-  return env as unknown as { DB: D1Database; DEEPSEEK_API_KEY?: string; E2E_TEST_MODE?: string };
+  return env as unknown as { DB: D1Database; DEEPSEEK_API_KEY?: string; deepseek?: string; E2E_TEST_MODE?: string };
 }
 
 export const characters: Record<number, string> = {

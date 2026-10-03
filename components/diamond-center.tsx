@@ -9,7 +9,7 @@ import { dailyRewards, diamondPacks, type DiamondState } from '@/lib/diamonds';
 import { ProfileEditor, useLocalProfile } from '@/components/profile-editor';
 import type { WorldMemory } from '@/components/world-tools';
 import '@/app/personal-library.css';
-import { AccountPanel, useAccount } from '@/components/account-center';
+import { useAccount } from '@/components/account-center';
 
 export type PersonalLibraryProps = {
   initialSection?: '智能体' | '故事' | '动态' | '记忆簿';
@@ -97,7 +97,6 @@ export function PersonalView({ control, onWallet, onWorld, onForum, initialSecti
     setEditing(true);
   }
   return <div className="screen scroll-screen personal-screen">
-    <AccountPanel onExplore={onAgents} onWallet={onWallet} />
     <header className="personal-tools"><button aria-label="每日签到" onClick={openCheckin}><CalendarCheck /></button><button aria-label="邀请好友" onClick={() => setInfo('邀请好友：分享 kirakira 的公开链接，和朋友一起探索故事。')}><Users /></button><button aria-label="个人设置" onClick={() => setInfo('登录后，角色对话、剧情、钻石和订单保存到你的账户。头像和简介暂为当前设备偏好。')}><Settings2 /><i /></button></header>
     <section className="personal-identity"><img src={profile.avatar} alt={`${profile.name}的头像`} width={78} height={78} /><div><h2>{profile.name} <span>◆ Lv 0</span></h2><small>{account.data?.authenticated ? '账户已连接' : '访客浏览'}</small></div></section>
     <p className="personal-bio">{profile.bio || '还没有写简介'}</p>

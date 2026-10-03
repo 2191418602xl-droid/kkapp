@@ -4,7 +4,6 @@ import { E2EPanel } from '@/components/e2e-panel';
 import { track,testHeaders,eventIds,flushEvents } from '@/lib/e2e-client';
 import { DiscoveryPlay } from '@/components/discovery-play';
 import { AgentStudio, useAgentLibrary, type AgentProfile } from '@/components/agent-studio';
-import { LLMChat } from '@/components/llm-chat';
 import { useLocalProfile } from '@/components/profile-editor';
 import { VirtualPhone } from '@/components/virtual-phone';
 import { MessagesView, useMessagesState } from '@/components/messages-view';
@@ -993,9 +992,8 @@ function HomeBody() {
           </section>)}
           </div>
         )}
-        {view === 'discover' && <DiscoverView onSelect={openDiscoverWorld} />}
-        {view === 'llm' && <LLMChat />}
-        <div hidden={view !== 'agent'}><AgentStudio library={agentLibrary} active={view === 'agent' ? activeAgent : null} mineRequest={mineRequest} backLabel={agentReturnView === 'profile' ? '返回我的' : '返回智能体列表'} onSelect={agent => { setActiveAgent(agent); setAgentReturnView('agent'); }} onBack={() => { setActiveAgent(null); if (agentReturnView === 'profile') setView('profile'); }} /></div>
+        {view === 'discover' && <DiscoverView onSelect={openDiscoverWorld} onCreate={() => { setActiveAgent(null); setView('llm'); }} />}
+        <div hidden={view !== 'agent' && view !== 'llm'}><AgentStudio library={agentLibrary} active={view === 'agent' || view === 'llm' ? activeAgent : null} mineRequest={mineRequest} backLabel={agentReturnView === 'profile' ? '返回我的' : '返回创作者中心'} onSelect={agent => { setActiveAgent(agent); setAgentReturnView('agent'); }} onBack={() => { setActiveAgent(null); if (agentReturnView === 'profile') setView('profile'); }} /></div>
         {view === 'community' && <MessagesView state={messagesState} />}
         <div hidden={view !== 'forum'}><ForumView active={view === 'forum'} posts={forumPosts} setPosts={setForumPosts} currentWorld={script} focusRequest={forumFocus} onBack={forumFocus ? () => { setForumFocus(null); setView('profile'); } : undefined} onOpen={openOverlay} onFlash={flash} onWorld={post => {
           if (post.worldSnapshot) { setDetailScript(post.worldSnapshot); setPreviousView('forum'); setView('detail'); return; }
@@ -1035,7 +1033,7 @@ function HomeBody() {
         />}
 
         {view === 'world' && <AccountEntry onOpen={() => setView('profile')} />}
-        {!['phone', 'detail', 'membership'].includes(view) && <BottomNav view={view} unread={messagesState.unreadCount} onChange={setView} />}
+        {!['phone', 'detail', 'membership'].includes(view) && <BottomNav view={view} unread={messagesState.unreadCount} onChange={next => { if (next === 'llm') setActiveAgent(null); setView(next); }} />}
       </section>
     </main>
   );
@@ -1344,7 +1342,7 @@ function WorldSheet({ script, panel, story, messages, comments, commentCount, wo
   );
 }
 
-function DiscoverView({ onSelect }: { onSelect: (card: (typeof discoverCards)[number]) => void }) {
+function DiscoverView({ onSelect, onCreate }: { onSelect: (card: (typeof discoverCards)[number]) => void; onCreate: () => void }) {
   const [moduleName, setModuleName] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [section, setSection] = useState<'广场' | '精选'>('广场');
@@ -1375,7 +1373,7 @@ function DiscoverView({ onSelect }: { onSelect: (card: (typeof discoverCards)[nu
       <label className="discover-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索角色、世界或作者" />{query && <button type="button" aria-label="清空搜索" onClick={() => setQuery('')}><X /></button>}</label>
 
       <section className="discover-module-grid" aria-label="发现玩法">
-        {discoverModules.map((module) => <button key={module.name} onClick={() => setModuleName(module.name)}>
+        {discoverModules.map((module) => <button key={module.name} onClick={() => module.name === '创作中心' ? onCreate() : setModuleName(module.name)}>
           <span className={`module-icon ${module.tone}`}><img src={module.icon} alt="" />{module.fresh && <i>NEW</i>}</span>
           <small>{module.name}</small>
         </button>)}
@@ -1672,7 +1670,7 @@ function BottomNav({ view, unread, onChange }: { view: View; unread: number; onC
       {items.map((item) => {
         const Icon = item.icon;
         const active = view === item.id || (view === 'forum' && item.id === 'community');
-        return <button key={item.id} className={active ? 'active' : ''} aria-current={active ? 'page' : undefined} aria-label={item.id === 'llm' ? '大模型对话' : item.id === 'discover' ? '发现' : item.label} onClick={() => onChange(item.id)}><Icon />{Boolean(item.badge) && <i className="nav-badge">{item.badge}</i>}{item.label && <span>{item.label}</span>}</button>;
+        return <button key={item.id} className={active ? 'active' : ''} aria-current={active ? 'page' : undefined} aria-label={item.id === 'llm' ? '创作者中心' : item.id === 'discover' ? '发现' : item.label} onClick={() => onChange(item.id)}><Icon />{Boolean(item.badge) && <i className="nav-badge">{item.badge}</i>}{item.label && <span>{item.label}</span>}</button>;
       })}
     </nav>
   );

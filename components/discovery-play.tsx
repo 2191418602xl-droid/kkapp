@@ -5,7 +5,8 @@ import { ArrowLeft, ChevronRight, Heart, Sprout, Droplets, BookOpen, Mail, Headp
 import { beijingDay, boardReply, boardWinner, companions, emptyDiscovery, jobScenes, partnerTasks, questions, type DiscoveryState, type Entry } from '@/lib/discovery';
 
 type World = { title: string; image: string; likes: number; replies: number; excerpt: string };
-export function DiscoveryPlay({ name, worlds, onWorld, onBack }: { name: string; worlds: World[]; onWorld: (title: string) => void; onBack: () => void }) {
+export function DiscoveryPlay({ name, worlds, onWorld, onBack, initialCreatorMode = 'create' }: { name: string; worlds: World[]; onWorld: (title: string) => void; onBack: () => void; initialCreatorMode?: 'create' | 'drafts' }) {
+  const [creatorMode, setCreatorMode] = useState(initialCreatorMode);
   const [state, setState] = useState<DiscoveryState>(emptyDiscovery);
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [status, setStatus] = useState('');
   const [person, setPerson] = useState('lanchuan');
@@ -42,9 +43,9 @@ export function DiscoveryPlay({ name, worlds, onWorld, onBack }: { name: string;
   async function submit(event: FormEvent) {
     event.preventDefault();
     const action = name === '星光日记' ? 'diary' : name === '创作中心' ? 'draft' : 'letter';
-    if (await save({ action, title, text: copy, mood, hours, id: editing })) { setTitle(''); setCopy(''); setEditing(undefined); }
+    if (await save({ action, title, text: copy, mood, hours, id: editing })) { setTitle(''); setCopy(''); setEditing(undefined); if (name === '创作中心') setCreatorMode('drafts'); }
   }
-  function edit(entry: Entry) { setTitle(entry.title); setCopy(entry.text); setEditing(entry.id); setMood(entry.mood ?? '平静'); setPerson(entry.companion); }
+  function edit(entry: Entry) { setTitle(entry.title); setCopy(entry.text); setEditing(entry.id); setMood(entry.mood ?? '平静'); setPerson(entry.companion); setCreatorMode('create'); }
   const people = <div className="play-people" aria-label="选择搭档">{companions.map(c => <button key={c.id} aria-pressed={person === c.id} className={person === c.id ? 'chosen' : ''} onClick={() => { setPerson(c.id); setStatus(''); }}><img src={c.image} alt="" /><span>{c.name}</span></button>)}</div>;
   const entryList = (entries: Entry[], editable: boolean) => entries.length ? <div className="play-entries">{entries.map(entry => <article className="play-panel" key={entry.id}><div className="play-between"><h3>{entry.title}</h3>{editable && <button className="play-link" onClick={() => edit(entry)}>编辑</button>}</div><small>{new Date(entry.date).toLocaleDateString('zh-CN')} · {companions.find(c => c.id === entry.companion)?.name}{entry.mood && ` · ${entry.mood}`}</small>{entry.openAt && Date.parse(entry.openAt) > Date.now() ? <p className="play-muted">信件已封存，将于 {new Date(entry.openAt).toLocaleString('zh-CN')} 开启。到时点击下方「重新加载记录」。</p> : <p className="play-prose">{entry.text}</p>}</article>)}</div> : <p className="play-empty">这里还没有记录，写下第一篇吧。</p>;
   const writing = (label: string, placeholder: string) => <form className="play-panel play-form" onSubmit={submit}><h3>{editing ? '编辑记录' : label}</h3><label>标题<input required maxLength={60} value={title} onChange={e => setTitle(e.target.value)} placeholder="给这一刻取个名字" /></label><label>{name === '创作中心' ? '角色与世界设定' : '正文'}<textarea required maxLength={2000} rows={6} value={copy} onChange={e => setCopy(e.target.value)} placeholder={placeholder} /></label><div className="play-between"><small>{copy.length}/2000</small><button className="play-primary" disabled={!ready || busy}>{busy ? '保存中…' : name === '时差信箱' ? '封存这封信' : '保存'} </button></div>{editing && <button type="button" className="play-link" onClick={() => { setEditing(undefined); setTitle(''); setCopy(''); }}>取消编辑</button>}</form>;
@@ -62,7 +63,7 @@ export function DiscoveryPlay({ name, worlds, onWorld, onBack }: { name: string;
 
       {name === '星光日记' && <>{people}<div className="play-eyebrow"><BookOpen size={16} /> 今天的心情</div><div className="play-chips">{['开心', '平静', '想念', '低落'].map(m => <button key={m} aria-pressed={mood === m} onClick={() => setMood(m)}>{m}</button>)}</div>{writing('写下今天', '今天，有什么想留给未来的自己？')}<h3>我的日记 · {state.diaries.length}</h3>{entryList(state.diaries, true)}</>}
 
-      {name === '创作中心' && <><section className="play-panel"><div className="play-eyebrow">CREATOR STUDIO</div><h1>故事，从你的一句话开始</h1><p>保存角色设定、世界背景和开场白。当前为私有草稿，不会发布到社区。</p></section>{writing('新建世界草稿', '角色是谁？你们在哪里相遇？写下背景、性格和第一句话…')}<h3>草稿箱 · {state.drafts.length}</h3>{entryList(state.drafts, true)}</>}
+      {name === '创作中心' && <><section className="play-panel"><h1>世界与剧情</h1><p>保存角色设定、世界背景和开场白。草稿仅自己可见。</p></section><div className="play-chips"><button aria-pressed={creatorMode === 'create'} onClick={() => setCreatorMode('create')}>创建世界／剧情</button><button aria-pressed={creatorMode === 'drafts'} onClick={() => setCreatorMode('drafts')}>草稿箱 · {state.drafts.length}</button></div>{creatorMode === 'create' ? writing('新建世界草稿', '角色是谁？你们在哪里相遇？写下背景、性格和第一句话…') : <><h3>草稿箱 · {state.drafts.length}</h3>{entryList(state.drafts, true)}</>}</>}
 
       {name === '时差信箱' && <>{people}<section className="play-panel"><div className="play-eyebrow"><Mail size={16} /> 寄给未来的自己 · 关于{selected.name}</div><p>把想说的话封存，等未来的你回来开启。</p><div className="play-chips">{[[0, '现在开启'], [24, '明天此刻'], [168, '一周以后']].map(([h, label]) => <button key={h} aria-pressed={hours === h} onClick={() => setHours(Number(h))}>{label}</button>)}</div></section>{writing('写一封时差信', '等你读到这里的时候…')}<h3>我的信箱 · {state.letters.length}</h3>{entryList(state.letters, false)}<p className="play-muted">站内定时开启，不会发送真实邮件或推送。</p></>}
 
