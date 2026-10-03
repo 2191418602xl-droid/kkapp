@@ -1,0 +1,21 @@
+{
+  "task": "WB-004 immediate blocking review, fix before delivery",
+  "findings": [
+    "reserveChatReply currently has no durable reservation row and checks only committed. Concurrent calls can reserve unlimited free replies. Add a reservation table with account, request key, status, day, paid/cost. Count active reservations against free quota atomically. Use user-scoped idempotency keys supplied by the chat turn ID, not a random ID per retry.",
+    "refundChatReply currently adds 1 diamond even when the original reservation was free or nonexistent. Refund only the recorded actual debit, once. Mark free failed reservations released without credit. commitChatReply must transition an existing reserved row only once. Use recorded reservation day across Beijing midnight, never current day during commit/refund. Add tests for these exact cases.",
+    "Conversation completion and commerce commit must be atomic together. Export commitChatReply(db, accountId, reservationId, additionalStatements?: D1PreparedStatement[]) and execute all statements in one DB batch, or return commit statements for caller's batch. Extra statements will save the AI reply and release conversation lock. Do not double-charge if response delivery fails after successful DB commit.",
+    "OrderRow uses camelCase but SELECT * returns snake_case. Map DB rows explicitly on every public return, keeping internal Row type separate. product_id in fulfillOrder currently conflicts with public type.",
+    "createOrder replay must reject a changed product for an existing idempotency key. Snapshot product type, diamonds, membership duration, amount and currency at creation; fulfillment must use the immutable order snapshot. Guard one-time products against parallel pending/paid orders.",
+    "verifyPaymentAndFulfill has no signature check despite its name and testMode is not persisted. Do not expose this as live verified payment. Only export a clearly named test harness settlement accepting explicitly test=true and setting test_mode=1 BEFORE credit. Production API always PAYMENT_UNAVAILABLE. Tests must prove simulated payments never add to live GMV. Live payment adapter can remain unavailable until actual provider integration.",
+    "getGMV(db) discloses all accounts. Export getAccountGMV(db, accountId) and scope frontend statistics to that account. No public admin-wide endpoint.",
+    "getChatQuotaState returning null before the first turn makes UI show zero free replies. Return today's zero state with membership.freeReplyLimit remaining even when no row exists.",
+    "An expired already-used trial should return a clear error without extending it. Include trialUsed in account state so frontend can disable repeat claim. Paid membership purchases must extend from max(now, existing expiry), not overwrite remaining duration."
+  ],
+  "additional_review": [
+    "Your existing tests only import node:sqlite and duplicate the schema and SQL. They never import account-commerce. Replace with async tests that import the real compiled TypeScript module and read schema-wb004.sql. Include Promise.all reservation tests and transaction rollback failure injection.",
+    "Membership source_order must have a UNIQUE constraint. Random primary IDs plus ON CONFLICT DO NOTHING do not prevent duplicate fulfillment. Entitlements, payment/order transition and unique event must be atomic.",
+    "Cancellation must check conditional update results. Payment racing cancellation must not write a cancelled event when update changed zero rows. Test this.",
+    "Additional conversation statements must run only on first valid reservation commit. Never execute them on repeated commit or failed/refunded reservation. Protect them in the atomic batch."
+  ],
+  "priority": "Fix and test these before final handoff; do not just document them. Keep contract functions ensureAccount, getAccountState, getWalletState, claimDailyReward, grantTrial, reserveChatReply, commitChatReply, refundChatReply, listProducts, createOrder, getAccountOrders, cancelOrder. Codex handles UI/routes and integration."
+}

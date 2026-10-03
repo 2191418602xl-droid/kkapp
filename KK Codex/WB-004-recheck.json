@@ -1,0 +1,13 @@
+{
+  "status": "Second delivery rejected pending actual concurrency fixes. Tests pass because they do not stress the remaining races.",
+  "fixes": [
+    "reserveChatReply still SELECT COUNT then INSERT with JS isFree. Promise.all of four new reservations will all observe count zero and all be free. Make cost calculation a subquery INSIDE the reservation INSERT. Put reservation insertion and debit in ONE D1 batch. Count and balance must be checked inside that same SQL INSERT. No await gap between cost decision and insert. Add Promise.all test with 8 reservations against signup balance 5 and free limit 3, and a ninth rejection.",
+    "commitChatReply does an unprotected pre-read then conditional UPDATE followed by unconditional additionalStatements. Concurrent commits can save twice; refund racing commit can still save a paid reply free. Add an atomic SQL transaction guard (a CHECK constraint guard table or a CASE that raises an SQLite error on invalid expected status) as first statement inside batch; catch conflict and reread for already-committed replay. Run extra statements ONLY for first successful reserved-to-committed transition. Test Promise.all duplicate commits with an extra increment statement.",
+    "refundChatReply must put transition and credit in one batch with the same transaction guard. Otherwise failed credit leaves status refunded and permanently loses money. Test failure injection rollback and commit-vs-refund race.",
+    "Membership source_order must be NOT NULL UNIQUE in BOTH SQL and Drizzle definitions. Fulfillment plus membership/ledger/event writes must be atomic, never separate async writes.",
+    "Starter pending order guard must be a DB partial UNIQUE index on account/product_id WHERE product_id='starter' AND status IN ('pending','paid','fulfilled'), present in SQL AND Drizzle. Test Promise.all createOrder with distinct keys.",
+    "Cancel conditional transition and event must be atomic; return 409 when state changed. Settlement is test-only internal function with explicit test=true parameter, never a production HTTP test endpoint. Do not add generic live fulfillment without a merchant verification adapter.",
+    "Return RESERVATION_NOT_COMMITTABLE for reusing refunded keys. Codex will allocate a new attempt reservation key only after the prior turn is durably failed. Do not return a successful refunded reservation.",
+    "Re-read WB-004-review.json additional_review. Use actual async library imports, schema from file, and report test failures before patching. Keep 24 hour trial exact. No KKApp writes."
+  ]
+}

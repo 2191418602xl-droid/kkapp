@@ -1,0 +1,36 @@
+{
+  "task": "WB-004 conversion flow implementation and verification",
+  "date": "2026-09-30",
+  "status": "published_with_external_blockers",
+  "delegation": {
+    "application": "WorkBuddy",
+    "deliveryDirectory": "/Users/facaimeinv/Desktop/KK WB /WB-004/",
+    "review": "Multiple implementation reviews, owner fixes and independent read-only acceptance completed."
+  },
+  "publication": {
+    "version": 60,
+    "commit": "fb1af4d3512bcf2b5e7123da8215545545e1454a",
+    "deploymentId": "appgdep_6abd0f5e1ea48191a377da0a378d4eb2",
+    "status": "succeeded",
+    "url": "https://lumi-world-kkapp.gentle-slug-1144.chatgpt.site/"
+  },
+  "verified": [
+    "TypeScript and production build passed; live database migration created the account, conversation, entitlement and order tables.",
+    "Actual source plus SQLite integration tests passed for identity isolation, once-only grants, quota concurrency, debit rollback, refund, conversation retry, order idempotency and test-payment exclusion from GMV.",
+    "The official Sites local sign-in simulator established an authenticated local_seedy account, with a single 5-diamond signup grant.",
+    "A real DeepSeek request through localhost /api/chat returned an original role reply and saved stage 1 plus both conversation messages.",
+    "Reading the conversation in a separate HTTP request restored both messages. Repeating the same request ID returned replayed=true without another model call.",
+    "Local daily claim increased balance from 5 to 6; a repeated claim kept the balance at 6.",
+    "The local 24-hour membership trial activated the 20-free-replies daily entitlement.",
+    "A local membership order was created pending at 2990 fen and then cancelled. Payment remained unavailable and GMV remained zero."
+  ],
+  "notVerifiedOrBlocked": [
+    "Hosted real-user sign-in and full browser click-through are not verified: browser inspection repeatedly timed out after publication. Local simulated authentication is not evidence of hosted end-to-end login success.",
+    "Voice synthesis and transcription require configured provider credentials. No real voice success is claimed.",
+    "Real collection requires a payment merchant and verified server payment callbacks. No real charge, paid entitlement or GMV success is claimed."
+  ],
+  "nextRequiredConfiguration": [
+    "Server-side speech synthesis and speech-recognition provider configuration.",
+    "Payment merchant credentials and callback verification contract."
+  ]
+}

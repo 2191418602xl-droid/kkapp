@@ -1,26 +1,39 @@
-# KKApp
+# kirakira / KKApp
 
-KKApp immersive character world demo application.
+一个面向 AI 角色世界的可交互 Web App，包含沉浸式剧情、角色对话、发现页、虚拟手机、多模态创作和 AI 角色创建入口。
 
-## Download the complete source
+## 在线体验
 
-The source archive is split into two parts because GitHub's browser uploader limits individual files. Download both `KKApp-source.zip.part-aa` and `KKApp-source.zip.part-ab` from this repository, place them in the same folder, then join them:
+https://lumi-world-kkapp.gentle-slug-1144.chatgpt.site/
 
-**macOS / Linux**
+## 本地运行
 
-```sh
-cat KKApp-source.zip.part-aa KKApp-source.zip.part-ab > KKApp-source.zip
-unzip KKApp-source.zip
+需要 Node.js 22.13 或更高版本。
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-**Windows (Command Prompt)**
+打开终端显示的本地地址即可使用。
 
-```bat
-copy /b KKApp-source.zip.part-aa+KKApp-source.zip.part-ab KKApp-source.zip
+## 模型配置
+
+项目不会提交真实 API Key。复制 `.env.example` 为 `.env.local`，按需填写：
+
+- `DEEPSEEK_API_KEY`：角色对话与 AI 角色创建
+- `ARK_API_KEY`、`ARK_IMAGE_MODEL`：火山引擎图片生成
+- `DOUBAO_SPEECH_API_KEY`：豆包语音合成
+
+`.env.local` 已被 Git 忽略，不会上传到 GitHub。
+
+## 构建
+
+```bash
+npm run build
 ```
 
-Extract the resulting zip. To run locally, install Node.js 20+, run `npm install`, copy `.env.example` to `.env.local`, configure the service keys you have, then run `npm run dev`.
+## 许可证
 
-The public demo is available at https://lumi-world-kkapp.gentle-slug-1144.chatgpt.site/.
-
-Secrets are not included. Configure your own API keys locally in `.env.local`; do not commit that file.
+MIT

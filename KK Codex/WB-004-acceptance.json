@@ -1,0 +1,12 @@
+{
+  "task": "WB-004 final read-only verification",
+  "project": "/Users/facaimeinv/Documents/ChatGPT/KKApp",
+  "instructions": [
+    "Codex integrated the backend, platform authentication, persisted conversations, frontend wallet, trial and order flow.",
+    "Independent verification found remaining defects in your 705-line delivery. Codex fixed atomic debit rollback, refund error propagation, same-key concurrent orders, transactional membership extension, and real Drizzle CHECK and partial unique constraints.",
+    "Do not overwrite KKApp or re-import your external deliverable. Treat current KKApp as authoritative.",
+    "Read-only validation only: run node scripts/test-account-flow.mjs from KKApp. Read the changed API and account UI to verify the diagram steps. Do not create real orders, credentials, make payments, edit source or publish.",
+    "Write your final findings only inside /Users/facaimeinv/Desktop/KK WB /WB-004/. Distinguish mock-provider database integration tests from real hosted end-to-end success.",
+    "Voice credentials and payment merchant are absent. Do not claim real voice or real GMV success. Codex will publish after owner validation."
+  ]
+}

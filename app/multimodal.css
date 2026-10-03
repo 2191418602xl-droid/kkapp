@@ -1,0 +1,56 @@
+.mm-backdrop { position: fixed; inset: 0; z-index: 210; background: #030207b8; backdrop-filter: blur(9px); }
+.mm-viewport { position: fixed; inset: 0; z-index: 211; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+.mm-dialog { pointer-events: auto; width: min(100%, 560px); min-width: 0; max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; background: #17131d; color: #f7f3fa; border: 1px solid #554253; border-radius: 26px; padding: 24px; box-shadow: 0 24px 100px #0009; outline: none; font-size: 15px; }
+.mm-dialog * { box-sizing: border-box; }
+.mm-dialog > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.mm-dialog [data-slot="dialog-title"] { font-size: 22px; font-weight: 700; line-height: 1.4; }
+.mm-dialog [data-slot="dialog-description"] { color: #b9aabe; margin-top: 6px; line-height: 1.6; }
+.mm-dialog button, .mm-dialog a, .mm-reader button, .mm-entry { display: inline-flex; justify-content: center; align-items: center; gap: 7px; cursor: pointer; min-height: 40px; font: inherit; }
+.mm-dialog button:disabled { cursor: not-allowed; opacity: .5; }
+.mm-dialog button:focus-visible, .mm-dialog a:focus-visible, .mm-reader button:focus-visible, .mm-entry:focus-visible { outline: 2px solid #ff88b7; outline-offset: 3px; }
+.mm-dialog svg, .mm-reader svg, .mm-entry svg { width: 20px; height: 20px; flex-shrink: 0; }
+.mm-close { background: #ffffff0b; border: 1px solid #ffffff18; border-radius: 50%; width: 40px; flex-shrink: 0; color: #ddd2e3; }
+.mm-studio, .mm-recorder { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.mm-tabs, .mm-ratios, .mm-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+.mm-tabs { border-bottom: 1px solid #ffffff12; padding-bottom: 14px; }
+.mm-tabs button, .mm-ratios button, .mm-presets button { border: 1px solid #ffffff14; background: #24202c; color: #cfc4d6; border-radius: 12px; padding: 8px 12px; }
+.mm-tabs button { flex: 1; font-weight: 600; }
+.mm-tabs button[aria-pressed="true"], .mm-ratios button[aria-pressed="true"] { border-color: #ff6ca8; color: #ff8fbd; background: #f15b9630; }
+.mm-dialog label { display: flex; flex-direction: column; gap: 9px; font-weight: 600; line-height: 1.5; }
+.mm-dialog textarea, .mm-dialog select, .mm-reader select { width: 100%; background: #0e0c13; color: #f4edf8; border: 1px solid #403349; border-radius: 12px; padding: 12px; font: inherit; font-size: 16px; line-height: 1.65; outline-offset: 3px; }
+.mm-dialog textarea { resize: vertical; min-height: 105px; max-height: 280px; }
+.mm-dialog .mm-primary { background: linear-gradient(115deg,#fd659f,#c9519e); border: 0; border-radius: 14px; padding: 13px; color: #fff; min-height: 48px; font-weight: 700; }
+.mm-notice { display: block; background: #ffd0770b; border: 1px solid #e7b46a40; padding: 12px; border-radius: 12px; line-height: 1.65; color: #eac994; }
+.mm-dialog small, .mm-help, .mm-recorder > p { font-size: 13px; line-height: 1.7; color: #b5aabc; margin: 0; }
+.mm-error { font-size: 14px; line-height: 1.7; padding: 10px 12px; background: #e8496720; color: #ffb5c5; border-radius: 10px; margin: 0; }
+.mm-result { margin: 0; background: #0c0a10; border-radius: 16px; overflow: hidden; }
+.mm-result > img { display: block; max-height: 390px; width: 100%; object-fit: contain; }
+.mm-result figcaption { padding: 9px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+.mm-result figcaption > span { margin-right: auto; color: #b8a7c3; }
+.mm-result a, .mm-result button, .mm-download { border: 0; background: #ffffff0e; padding: 6px 10px; border-radius: 10px; color: #f7c2dd; text-decoration: none; }
+.mm-library-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mm-library-heading button { border: 0; background: transparent; color: #f7aaca; font-size: 13px; }
+.mm-library { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.mm-library button { position: relative; border: 1px solid #ffffff14; padding: 0; border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: #211a29; }
+.mm-library img { width: 100%; height: 100%; object-fit: cover; }
+.mm-library span { position: absolute; bottom: 4px; right: 4px; background: #0008; border-radius: 4px; padding: 2px 4px; font-size: 12px; color: #fff; }
+.mm-empty { text-align: center; padding: 24px 12px; border: 1px dashed #665171; border-radius: 16px; color: #b3a2bc; }
+.mm-empty svg { width: 32px; height: 32px; margin: 0 auto 12px; }
+.mm-empty p { margin: 0; line-height: 1.6; }
+.mm-entry { border: 1px solid #f975ab55; background: #e5578e18; color: #ff99c1; border-radius: 14px; padding: 10px 16px; }
+.agent-studio-screen > .mm-entry { margin: 0 20px 16px; }
+.mm-entry.compact { padding: 8px 12px; font-size: 14px; min-height: 38px; }
+.mm-reader { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding: 12px; border: 1px solid #ffffff18; border-radius: 14px; background: #100c1680; color: #f7eefa; }
+.mm-reader label { font-size: 13px; display: grid; gap: 6px; flex: 1; min-width: 125px; }
+.mm-reader select { padding: 8px; font-size: 14px; }
+.mm-reader button { background: #f566a62c; color: #ffb5d4; border: 1px solid #e95e9e66; border-radius: 10px; padding: 8px 12px; }
+.mm-reader small, .mm-reader .mm-error { flex-basis: 100%; font-size: 12px; line-height: 1.6; }
+.ai-chat-screen > .mm-reader { flex-shrink: 0; margin: 4px 12px; padding: 8px 10px; }
+.message-composer .mm-mic { background: #322537; color: #f6b3d0; flex-shrink: 0; width: 42px; height: 44px; border-radius: 12px; }
+.mm-recorder .mm-record-button { min-height: 64px; background: #412539; color: #ffb8d6; border: 1px solid #db7b9f; border-radius: 16px; }
+.mm-record-review { display: flex; flex-direction: column; gap: 12px; }
+.mm-recorder audio { width: 100%; }
+.mm-spin { animation: mm-rotate 1s linear infinite; }
+@keyframes mm-rotate { to { transform: rotate(360deg); } }
+@media (max-width: 420px) { .mm-viewport { padding: 8px; } .mm-dialog { max-height: calc(100dvh - 16px); padding: 18px 14px; border-radius: 20px; } .mm-presets { gap: 5px; } .mm-presets button { font-size: 12px; padding: 6px 8px; } }
+@media (prefers-reduced-motion: reduce) { .mm-spin { animation: none; } }
